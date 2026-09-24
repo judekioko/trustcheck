@@ -1,10 +1,35 @@
 const BASE = "/api";
+const TOKEN_KEY = "trustcheck_token";
 
-async function request(path, options) {
-  const res = await fetch(`${BASE}${path}`, {
-    headers: { "Content-Type": "application/json" },
-    ...options,
-  });
+export function getToken() {
+  try {
+    return localStorage.getItem(TOKEN_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function setToken(token) {
+  try {
+    if (token) localStorage.setItem(TOKEN_KEY, token);
+    else localStorage.removeItem(TOKEN_KEY);
+  } catch {
+    // ignore storage failures (e.g. private browsing)
+  }
+}
+
+async function request(path, options = {}) {
+  const token = getToken();
+  const headers = { "Content-Type": "application/json", ...(options.headers || {}) };
+  if (token) headers.Authorization = `Bearer ${token}`;
+
+  const res = await fetch(`${BASE}${path}`, { ...options, headers });
+
+  if (res.status === 401) {
+    setToken(null);
+    window.dispatchEvent(new CustomEvent("trustcheck:unauthorized"));
+  }
+
   if (!res.ok && res.status !== 204) {
     const body = await res.json().catch(() => ({}));
     throw new Error(body.error || `Request failed (${res.status})`);
@@ -13,8 +38,28 @@ async function request(path, options) {
   return res.json();
 }
 
+export function register(data) {
+  return request("/auth/register", { method: "POST", body: JSON.stringify(data) });
+}
+
+export function login(data) {
+  return request("/auth/login", { method: "POST", body: JSON.stringify(data) });
+}
+
+export function fetchMe() {
+  return request("/auth/me");
+}
+
 export function runTrustCheck(payload) {
   return request("/trustcheck", { method: "POST", body: JSON.stringify(payload) });
+}
+
+export function listChecks() {
+  return request("/checks");
+}
+
+export function getCheckDetail(id) {
+  return request(`/checks/${id}`);
 }
 
 export function listSuppliers() {

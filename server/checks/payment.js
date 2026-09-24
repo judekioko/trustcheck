@@ -4,7 +4,7 @@ function normalizeAccount(value) {
   return (value || "").toString().replace(/\s|-/g, "");
 }
 
-export async function checkPayment({ supplierName, accountNumber, mpesaPaybill, bank, phone }) {
+export function checkPayment(userId, { supplierName, accountNumber, mpesaPaybill, bank, phone }) {
   const reasons = [];
   let riskPoints = 0;
 
@@ -12,7 +12,7 @@ export async function checkPayment({ supplierName, accountNumber, mpesaPaybill, 
     return { status: "unknown", score: 0, reasons: ["No supplier/recipient name provided"], matchedSupplier: null };
   }
 
-  const supplier = await findSupplierByNameOrDomain(supplierName);
+  const supplier = findSupplierByNameOrDomain(userId, supplierName);
 
   if (!supplier) {
     riskPoints += 30;
