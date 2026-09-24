@@ -15,23 +15,23 @@ function normalize(row) {
   };
 }
 
-export function listSuppliers(userId) {
+export function listSuppliers(orgId) {
   const rows = db
-    .prepare("SELECT * FROM suppliers WHERE user_id = ? ORDER BY name ASC")
-    .all(userId);
+    .prepare("SELECT * FROM suppliers WHERE org_id = ? ORDER BY name ASC")
+    .all(orgId);
   return rows.map(normalize);
 }
 
-export function getSupplier(userId, id) {
+export function getSupplier(orgId, id) {
   const row = db
-    .prepare("SELECT * FROM suppliers WHERE user_id = ? AND id = ?")
-    .get(userId, id);
+    .prepare("SELECT * FROM suppliers WHERE org_id = ? AND id = ?")
+    .get(orgId, id);
   return normalize(row);
 }
 
-export function findSupplierByNameOrDomain(userId, query) {
+export function findSupplierByNameOrDomain(orgId, query) {
   if (!query) return null;
-  const rows = db.prepare("SELECT * FROM suppliers WHERE user_id = ?").all(userId);
+  const rows = db.prepare("SELECT * FROM suppliers WHERE org_id = ?").all(orgId);
   const q = query.trim().toLowerCase();
   const match = rows.find(
     (s) =>
@@ -43,13 +43,13 @@ export function findSupplierByNameOrDomain(userId, query) {
   return normalize(match);
 }
 
-export function createSupplier(userId, data) {
+export function createSupplier(orgId, data) {
   const insert = db.prepare(`
-    INSERT INTO suppliers (user_id, name, domain, email, phone, bank, account_number, mpesa_paybill, notes)
+    INSERT INTO suppliers (org_id, name, domain, email, phone, bank, account_number, mpesa_paybill, notes)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
   const info = insert.run(
-    userId,
+    orgId,
     (data.name || "Unnamed supplier").trim(),
     (data.domain || "").trim().toLowerCase(),
     (data.email || "").trim().toLowerCase(),
@@ -59,17 +59,17 @@ export function createSupplier(userId, data) {
     (data.mpesaPaybill || "").trim(),
     (data.notes || "").trim()
   );
-  return getSupplier(userId, Number(info.lastInsertRowid));
+  return getSupplier(orgId, Number(info.lastInsertRowid));
 }
 
-export function updateSupplier(userId, id, data) {
-  const existing = getSupplier(userId, id);
+export function updateSupplier(orgId, id, data) {
+  const existing = getSupplier(orgId, id);
   if (!existing) return null;
   const merged = { ...existing, ...data };
   db.prepare(`
     UPDATE suppliers
     SET name = ?, domain = ?, email = ?, phone = ?, bank = ?, account_number = ?, mpesa_paybill = ?, notes = ?
-    WHERE user_id = ? AND id = ?
+    WHERE org_id = ? AND id = ?
   `).run(
     merged.name.trim(),
     (merged.domain || "").trim().toLowerCase(),
@@ -79,13 +79,13 @@ export function updateSupplier(userId, id, data) {
     (merged.accountNumber || "").trim(),
     (merged.mpesaPaybill || "").trim(),
     (merged.notes || "").trim(),
-    userId,
+    orgId,
     id
   );
-  return getSupplier(userId, id);
+  return getSupplier(orgId, id);
 }
 
-export function deleteSupplier(userId, id) {
-  const info = db.prepare("DELETE FROM suppliers WHERE user_id = ? AND id = ?").run(userId, id);
+export function deleteSupplier(orgId, id) {
+  const info = db.prepare("DELETE FROM suppliers WHERE org_id = ? AND id = ?").run(orgId, id);
   return info.changes > 0;
 }

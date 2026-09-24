@@ -36,8 +36,14 @@ export function AuthProvider({ children }) {
     setUser(user);
   }
 
-  async function register(businessName, email, password) {
-    const { token, user } = await api.register({ businessName, email, password });
+  async function register(name, orgName, email, password) {
+    const { token, user } = await api.register({ name, orgName, email, password });
+    api.setToken(token);
+    setUser(user);
+  }
+
+  async function acceptInvite(inviteToken, name, password) {
+    const { token, user } = await api.acceptInvite(inviteToken, { name, password });
     api.setToken(token);
     setUser(user);
   }
@@ -48,7 +54,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, acceptInvite, logout, refresh: hydrate }}>
       {children}
     </AuthContext.Provider>
   );
