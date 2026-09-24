@@ -1,0 +1,35 @@
+[
+  {
+    "id": "sup_kcb001",
+    "name": "KCB Bank Kenya",
+    "domain": "kcbgroup.com",
+    "email": "info@kcbgroup.com",
+    "phone": "+254711087000",
+    "bank": "KCB Bank",
+    "accountNumber": "1122334455",
+    "mpesaPaybill": "522522",
+    "notes": "Seed record for demo purposes"
+  },
+  {
+    "id": "sup_savannah002",
+    "name": "Savannah Office Supplies Ltd",
+    "domain": "savannahoffice.co.ke",
+    "email": "accounts@savannahoffice.co.ke",
+    "phone": "+254722445566",
+    "bank": "Equity Bank",
+    "accountNumber": "0990112233445",
+    "mpesaPaybill": "247247",
+    "notes": "Seed record for demo purposes"
+  },
+  {
+    "id": "sup_jengabuild003",
+    "name": "JengaBuild Hardware",
+    "domain": "jengabuild.co.ke",
+    "email": "sales@jengabuild.co.ke",
+    "phone": "+254733998877",
+    "bank": "Co-operative Bank",
+    "accountNumber": "01129988776655",
+    "mpesaPaybill": "400200",
+    "notes": "Seed record for demo purposes"
+  }
+]
