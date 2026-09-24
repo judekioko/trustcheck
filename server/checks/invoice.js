@@ -30,7 +30,7 @@ function extractPhone(text) {
   return match ? match[0] : null;
 }
 
-export async function checkInvoice(rawText, supplierNameHint) {
+export function checkInvoice(userId, rawText, supplierNameHint) {
   const reasons = [];
   let riskPoints = 0;
 
@@ -40,7 +40,7 @@ export async function checkInvoice(rawText, supplierNameHint) {
 
   const text = rawText.trim();
   const nameGuess = supplierNameHint?.trim() || extractSupplierNameGuess(text);
-  const supplier = await findSupplierByNameOrDomain(nameGuess);
+  const supplier = findSupplierByNameOrDomain(userId, nameGuess);
 
   const foundAccounts = extractAccountNumbers(text);
   const foundPhone = extractPhone(text);

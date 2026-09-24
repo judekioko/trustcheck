@@ -1,75 +1,91 @@
-import { readFile, writeFile } from "node:fs/promises";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import { nanoid } from "nanoid";
+import { db } from "./db.js";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DATA_FILE = path.join(__dirname, "data", "suppliers.json");
-
-async function readAll() {
-  const raw = await readFile(DATA_FILE, "utf-8");
-  return JSON.parse(raw);
-}
-
-async function writeAll(suppliers) {
-  await writeFile(DATA_FILE, JSON.stringify(suppliers, null, 2), "utf-8");
-}
-
-export async function listSuppliers() {
-  return readAll();
-}
-
-export async function getSupplier(id) {
-  const suppliers = await readAll();
-  return suppliers.find((s) => s.id === id) || null;
-}
-
-export async function findSupplierByNameOrDomain(query) {
-  if (!query) return null;
-  const suppliers = await readAll();
-  const q = query.trim().toLowerCase();
-  return (
-    suppliers.find(
-      (s) =>
-        s.name.toLowerCase() === q ||
-        s.domain?.toLowerCase() === q ||
-        s.name.toLowerCase().includes(q) ||
-        q.includes(s.name.toLowerCase())
-    ) || null
-  );
-}
-
-export async function createSupplier(data) {
-  const suppliers = await readAll();
-  const supplier = {
-    id: `sup_${nanoid(8)}`,
-    name: data.name?.trim() || "Unnamed supplier",
-    domain: data.domain?.trim().toLowerCase() || "",
-    email: data.email?.trim().toLowerCase() || "",
-    phone: data.phone?.trim() || "",
-    bank: data.bank?.trim() || "",
-    accountNumber: data.accountNumber?.trim() || "",
-    mpesaPaybill: data.mpesaPaybill?.trim() || "",
-    notes: data.notes?.trim() || "",
+function normalize(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    name: row.name,
+    domain: row.domain || "",
+    email: row.email || "",
+    phone: row.phone || "",
+    bank: row.bank || "",
+    accountNumber: row.account_number || "",
+    mpesaPaybill: row.mpesa_paybill || "",
+    notes: row.notes || "",
   };
-  suppliers.push(supplier);
-  await writeAll(suppliers);
-  return supplier;
 }
 
-export async function updateSupplier(id, data) {
-  const suppliers = await readAll();
-  const idx = suppliers.findIndex((s) => s.id === id);
-  if (idx === -1) return null;
-  suppliers[idx] = { ...suppliers[idx], ...data, id };
-  await writeAll(suppliers);
-  return suppliers[idx];
+export function listSuppliers(userId) {
+  const rows = db
+    .prepare("SELECT * FROM suppliers WHERE user_id = ? ORDER BY name ASC")
+    .all(userId);
+  return rows.map(normalize);
 }
 
-export async function deleteSupplier(id) {
-  const suppliers = await readAll();
-  const next = suppliers.filter((s) => s.id !== id);
-  const changed = next.length !== suppliers.length;
-  if (changed) await writeAll(next);
-  return changed;
+export function getSupplier(userId, id) {
+  const row = db
+    .prepare("SELECT * FROM suppliers WHERE user_id = ? AND id = ?")
+    .get(userId, id);
+  return normalize(row);
+}
+
+export function findSupplierByNameOrDomain(userId, query) {
+  if (!query) return null;
+  const rows = db.prepare("SELECT * FROM suppliers WHERE user_id = ?").all(userId);
+  const q = query.trim().toLowerCase();
+  const match = rows.find(
+    (s) =>
+      s.name.toLowerCase() === q ||
+      (s.domain && s.domain.toLowerCase() === q) ||
+      s.name.toLowerCase().includes(q) ||
+      q.includes(s.name.toLowerCase())
+  );
+  return normalize(match);
+}
+
+export function createSupplier(userId, data) {
+  const insert = db.prepare(`
+    INSERT INTO suppliers (user_id, name, domain, email, phone, bank, account_number, mpesa_paybill, notes)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+  const info = insert.run(
+    userId,
+    (data.name || "Unnamed supplier").trim(),
+    (data.domain || "").trim().toLowerCase(),
+    (data.email || "").trim().toLowerCase(),
+    (data.phone || "").trim(),
+    (data.bank || "").trim(),
+    (data.accountNumber || "").trim(),
+    (data.mpesaPaybill || "").trim(),
+    (data.notes || "").trim()
+  );
+  return getSupplier(userId, Number(info.lastInsertRowid));
+}
+
+export function updateSupplier(userId, id, data) {
+  const existing = getSupplier(userId, id);
+  if (!existing) return null;
+  const merged = { ...existing, ...data };
+  db.prepare(`
+    UPDATE suppliers
+    SET name = ?, domain = ?, email = ?, phone = ?, bank = ?, account_number = ?, mpesa_paybill = ?, notes = ?
+    WHERE user_id = ? AND id = ?
+  `).run(
+    merged.name.trim(),
+    (merged.domain || "").trim().toLowerCase(),
+    (merged.email || "").trim().toLowerCase(),
+    (merged.phone || "").trim(),
+    (merged.bank || "").trim(),
+    (merged.accountNumber || "").trim(),
+    (merged.mpesaPaybill || "").trim(),
+    (merged.notes || "").trim(),
+    userId,
+    id
+  );
+  return getSupplier(userId, id);
+}
+
+export function deleteSupplier(userId, id) {
+  const info = db.prepare("DELETE FROM suppliers WHERE user_id = ? AND id = ?").run(userId, id);
+  return info.changes > 0;
 }

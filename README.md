@@ -26,20 +26,36 @@ inspectable heuristic engine (see `server/checks/`):
 - **Payment request check** — the core BEC-fraud catch: compares a requested
   payment destination (account number, paybill, bank, phone) against the
   supplier's record on file and flags any mismatch as high risk.
-- **Known suppliers** — a small CRUD registry (`server/data/suppliers.json`)
-  that the invoice/payment checks compare against. Add your real suppliers'
-  verified payment details here to get real protection.
+- **Known suppliers** — a per-business CRUD registry that the invoice/payment
+  checks compare against. Add your real suppliers' verified payment details
+  here to get real protection.
 
 All four checks are optional and independent — fill in whichever inputs you
 have, and the aggregate `/api/trustcheck` endpoint combines whatever was run
-into one report.
+into one report, which is also saved to that business's check history.
+
+## Accounts & data
+
+Each business signs up with a name/email/password (`bcryptjs` hashed,
+`jsonwebtoken`-based sessions). Suppliers and past checks are private to the
+account that created them — this is now a real multi-tenant foundation, not
+a single shared JSON file. Data lives in a SQLite database
+(`server/data/trustcheck.db`, via Node's built-in `node:sqlite`, so no native
+module install step) — swap `db.js` for a Postgres connection later without
+touching the rest of the app, since all writes go through `suppliers.js` /
+`history.js` / `auth.js`.
 
 ## Project layout
 
 ```
 trustcheck/
-  server/   Express API (heuristics + supplier registry)
-  client/   React + Vite front end
+  server/
+    db.js         SQLite schema + connection
+    auth.js       registration/login, password hashing, JWT sessions
+    suppliers.js  per-business supplier CRUD
+    history.js    per-business check history
+    checks/       the heuristic engines (domain, email, invoice, payment, aggregate)
+  client/         React + Vite front end (auth screens, check form, history, suppliers)
 ```
 
 ## Running it
@@ -64,24 +80,37 @@ npm run dev:client   # http://localhost:5173
 
 ## API
 
+- `POST /api/auth/register` `{ businessName, email, password }` → `{ token, user }`
+- `POST /api/auth/login` `{ email, password }` → `{ token, user }`
+- `GET  /api/auth/me` (Bearer token) → `{ user }`
+
+Everything below requires `Authorization: Bearer <token>` and is scoped to
+that business:
+
 - `GET  /api/suppliers` / `POST /api/suppliers` / `PUT /api/suppliers/:id` / `DELETE /api/suppliers/:id`
 - `POST /api/check/domain`   `{ domain }`
 - `POST /api/check/email`    `{ text, claimedOrgDomain? }`
 - `POST /api/check/invoice`  `{ text, supplierName? }`
 - `POST /api/check/payment`  `{ supplierName, accountNumber?, mpesaPaybill?, bank?, phone? }`
 - `POST /api/trustcheck`     `{ domain?: {value}, email?: {text, claimedOrgDomain}, invoice?: {text, supplierName}, payment?: {...} }`
-  → `{ report: { indicators, overallRisk, reasons, ranAt }, details }`
+  → `{ checkId, report: { indicators, overallRisk, reasons, ranAt }, details }`
+- `GET  /api/checks` → recent check history (summary)
+- `GET  /api/checks/:id` → full saved report for one past check
 
-## Known limitations (it's a prototype)
+Set `JWT_SECRET` in the environment for production; otherwise a random
+secret is generated once and persisted to `server/data/.jwt-secret` (dev
+only — rotating it invalidates all sessions).
+
+## Known limitations (still not the finished product)
 
 - Heuristics only — no external threat-intel, WHOIS, or paid verification
-  APIs are wired in. Domain age/registrar checks are stubbed via best-effort
-  DNS resolution only.
-- Supplier data is a flat JSON file, fine for a demo, not for production
-  multi-tenant use.
+  APIs are wired in yet. Domain age/registrar checks are stubbed via
+  best-effort DNS resolution only.
+- SQLite is fine for one server instance; a real multi-region deployment
+  would want Postgres.
 - No document upload/OCR yet — invoices are pasted as text.
-- No authentication — this is a local prototype, not a deployed multi-user
-  product.
+- Not deployed anywhere yet — runs locally only.
+- No billing — see the M-Pesa/Daraja option discussed for a future pass.
 
 ## Where this goes next
 
