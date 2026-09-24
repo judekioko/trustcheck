@@ -1,0 +1,368 @@
+.app-shell {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 20px 32px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.brand-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--accent);
+  color: white;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.brand h1 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.brand p {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  background: var(--gray-bg);
+  padding: 4px;
+  border-radius: 10px;
+}
+
+.tabs button {
+  border: none;
+  background: transparent;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.tabs button.active {
+  background: var(--surface);
+  color: var(--text-h);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.app-main {
+  flex: 1;
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 32px;
+}
+
+.app-footer {
+  text-align: center;
+  padding: 16px;
+  font-size: 12px;
+  color: var(--text);
+  border-top: 1px solid var(--border);
+}
+
+/* Forms */
+
+.trustcheck-layout {
+  display: grid;
+  grid-template-columns: minmax(320px, 1fr) minmax(320px, 420px);
+  gap: 28px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .trustcheck-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.trustcheck-form {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-section {
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.form-section:last-of-type {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.form-section h3 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.hint {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--text);
+  opacity: 0.85;
+}
+
+input, textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text-h);
+  font: inherit;
+  resize: vertical;
+}
+
+input:focus, textarea:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+@media (max-width: 520px) {
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.form-actions button,
+.supplier-actions button {
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-weight: 600;
+  background: var(--accent);
+  color: white;
+}
+
+.form-actions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.form-actions button.secondary,
+.supplier-actions button:not(.danger) {
+  background: var(--gray-bg);
+  color: var(--text-h);
+}
+
+.supplier-actions button.danger {
+  background: var(--red-bg);
+  color: var(--red);
+}
+
+.form-error {
+  margin: 0;
+  color: var(--red);
+  font-size: 13px;
+}
+
+/* Results / report card */
+
+.trustcheck-results {
+  position: sticky;
+  top: 24px;
+}
+
+.report-placeholder {
+  border: 1px dashed var(--border);
+  border-radius: 14px;
+  padding: 32px 20px;
+  text-align: center;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.report-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px;
+}
+
+.report-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.report-card-header h2 {
+  margin: 0;
+  font-size: 16px;
+  letter-spacing: 1px;
+}
+
+.risk-badge {
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.risk-badge.risk-low {
+  background: var(--green-bg);
+  color: var(--green);
+}
+
+.risk-badge.risk-medium {
+  background: var(--amber-bg);
+  color: var(--amber);
+}
+
+.risk-badge.risk-high {
+  background: var(--red-bg);
+  color: var(--red);
+}
+
+.indicator-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.indicator-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--gray-bg);
+}
+
+.indicator-label {
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.indicator-badge {
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: capitalize;
+}
+
+.indicator-badge.status-green { color: var(--green); }
+.indicator-badge.status-amber { color: var(--amber); }
+.indicator-badge.status-red { color: var(--red); }
+.indicator-badge.status-unknown { color: var(--text); }
+
+.reasons h3 {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text);
+  margin: 0 0 10px;
+}
+
+.reasons ul {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text-h);
+}
+
+.report-meta {
+  margin-top: 18px;
+  font-size: 12px;
+  color: var(--text);
+  opacity: 0.75;
+}
+
+/* Suppliers */
+
+.suppliers-layout {
+  display: grid;
+  grid-template-columns: minmax(320px, 420px) 1fr;
+  gap: 28px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .suppliers-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.suppliers-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.supplier-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 18px;
+}
+
+.supplier-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.supplier-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.supplier-actions button {
+  padding: 6px 12px;
+  font-size: 13px;
+}
+
+.supplier-detail {
+  margin: 2px 0;
+  font-size: 13px;
+  color: var(--text);
+}
