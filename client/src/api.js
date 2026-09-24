@@ -32,7 +32,10 @@ async function request(path, options = {}) {
 
   if (!res.ok && res.status !== 204) {
     const body = await res.json().catch(() => ({}));
-    throw new Error(body.error || `Request failed (${res.status})`);
+    const err = new Error(body.error || `Request failed (${res.status})`);
+    err.status = res.status;
+    err.code = body.code;
+    throw err;
   }
   if (res.status === 204) return null;
   return res.json();
@@ -40,6 +43,14 @@ async function request(path, options = {}) {
 
 export function register(data) {
   return request("/auth/register", { method: "POST", body: JSON.stringify(data) });
+}
+
+export function getInvite(token) {
+  return request(`/invites/${token}`);
+}
+
+export function acceptInvite(token, data) {
+  return request(`/invites/${token}/accept`, { method: "POST", body: JSON.stringify(data) });
 }
 
 export function login(data) {
@@ -76,4 +87,50 @@ export function updateSupplier(id, data) {
 
 export function deleteSupplier(id) {
   return request(`/suppliers/${id}`, { method: "DELETE" });
+}
+
+// --- Team ---
+
+export function getTeam() {
+  return request("/team/members");
+}
+
+export function inviteMember(data) {
+  return request("/team/invite", { method: "POST", body: JSON.stringify(data) });
+}
+
+export function removeMember(id) {
+  return request(`/team/members/${id}`, { method: "DELETE" });
+}
+
+// --- Billing ---
+
+export function getPlans() {
+  return request("/billing/plans");
+}
+
+export function getUsage() {
+  return request("/billing/usage");
+}
+
+export function getMpesaStatus() {
+  return request("/billing/mpesa-status");
+}
+
+export function subscribeToPro(phone) {
+  return request("/billing/subscribe", { method: "POST", body: JSON.stringify({ phone }) });
+}
+
+export function getPaymentStatus(checkoutRequestId) {
+  return request(`/billing/status/${checkoutRequestId}`);
+}
+
+// --- Admin ---
+
+export function getAdminOverview() {
+  return request("/admin/overview");
+}
+
+export function getAdminOrganizations() {
+  return request("/admin/organizations");
 }

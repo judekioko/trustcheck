@@ -15,11 +15,12 @@ const EMPTY_FORM = {
   paymentPhone: "",
 };
 
-export default function TrustCheckForm() {
+export default function TrustCheckForm({ onNavigateToBilling }) {
   const [form, setForm] = useState(EMPTY_FORM);
   const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [quotaExceeded, setQuotaExceeded] = useState(false);
 
   function update(field) {
     return (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
@@ -37,6 +38,7 @@ export default function TrustCheckForm() {
   async function handleSubmit(e) {
     e.preventDefault();
     setError(null);
+    setQuotaExceeded(false);
     if (!hasAnyInput()) {
       setError("Fill in at least one section below before running a TrustCheck.");
       return;
@@ -72,7 +74,11 @@ export default function TrustCheckForm() {
       const result = await runTrustCheck(payload);
       setReport(result.report);
     } catch (err) {
-      setError(err.message || "Something went wrong running the check.");
+      if (err.code === "QUOTA_EXCEEDED") {
+        setQuotaExceeded(true);
+      } else {
+        setError(err.message || "Something went wrong running the check.");
+      }
     } finally {
       setLoading(false);
     }
@@ -170,6 +176,14 @@ export default function TrustCheckForm() {
         </section>
 
         {error && <p className="form-error">{error}</p>}
+        {quotaExceeded && (
+          <div className="quota-banner">
+            <p>You've used all your monthly TrustChecks on the Free plan.</p>
+            <button type="button" onClick={onNavigateToBilling}>
+              Upgrade to Pro
+            </button>
+          </div>
+        )}
 
         <div className="form-actions">
           <button type="submit" disabled={loading}>

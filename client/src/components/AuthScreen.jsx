@@ -4,7 +4,8 @@ import { useAuth } from "../AuthContext";
 export default function AuthScreen() {
   const { login, register } = useAuth();
   const [mode, setMode] = useState("login");
-  const [businessName, setBusinessName] = useState("");
+  const [name, setName] = useState("");
+  const [orgName, setOrgName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
@@ -18,7 +19,7 @@ export default function AuthScreen() {
       if (mode === "login") {
         await login(email, password);
       } else {
-        await register(businessName, email, password);
+        await register(name, orgName, email, password);
       }
     } catch (err) {
       setError(err.message || "Something went wrong");
@@ -49,13 +50,22 @@ export default function AuthScreen() {
 
         <form onSubmit={handleSubmit} className="auth-form">
           {mode === "register" && (
-            <input
-              type="text"
-              placeholder="Business name"
-              value={businessName}
-              onChange={(e) => setBusinessName(e.target.value)}
-              required
-            />
+            <>
+              <input
+                type="text"
+                placeholder="Your name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+              <input
+                type="text"
+                placeholder="Business / organization name"
+                value={orgName}
+                onChange={(e) => setOrgName(e.target.value)}
+                required
+              />
+            </>
           )}
           <input
             type="email"
